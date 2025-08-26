@@ -50,9 +50,6 @@ jobs:
 
           cd ${{ vars.ROOT_DIR }}
 
-          nvm install
-          nvm use
-
           npm install --only=production
 
           pm2 startOrReload pm2.config.cjs
