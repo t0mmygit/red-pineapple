@@ -19,7 +19,7 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '24'
+        node-version: '22.x'
         cache: 'npm'
       
     - name: Install Dependencies
@@ -46,10 +46,15 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT || '22' }}
         script: |
+          source ~/.nvm/nvm.sh
+
           cd ${{ vars.ROOT_DIR }}
+
+          nvm install
+          nvm use
 
           npm install --only=production
 
-          pm2 reload pm2.config.cjs
+          pm2 startOrReload pm2.config.cjs
           pm2 save
           pm2 status
