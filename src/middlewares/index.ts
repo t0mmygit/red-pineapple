@@ -1,10 +1,10 @@
-import { Middleware, MiddlewareInteraction } from '../types';
+import { Interaction } from 'discord.js';
+import { Middleware } from '../types/index.js';
 
-export * from './isAdministrator';
-
+export * from './isAdministrator.js';
 
 export async function runMiddleware(
-  interaction: MiddlewareInteraction,
+  interaction: Interaction,
   middlewares: Middleware[],
 ): Promise<boolean> {
   for (const middleware of middlewares) {

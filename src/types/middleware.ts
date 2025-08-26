@@ -1,8 +1,5 @@
-import { ButtonInteraction, ChatInputCommandInteraction, ModalSubmitInteraction } from 'discord.js';
+import { Interaction } from 'discord.js';
 
 export type Middleware = (
-  interaction: ChatInputCommandInteraction | ButtonInteraction
+  interaction: Interaction
 ) => Promise<boolean> | boolean;
-
-export type MiddlewareInteraction
-  = ChatInputCommandInteraction | ButtonInteraction | ModalSubmitInteraction;

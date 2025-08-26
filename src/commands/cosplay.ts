@@ -46,7 +46,7 @@ export default createSlashCommand({
     await interaction.deferReply();
 
     const container = createContainer(interaction);
-    const component = createApprovalComponent(interaction.id, interaction.commandName);
+    const component = createApprovalComponent(interaction.commandName);
 
     await interaction.editReply({
       components: [container, component],

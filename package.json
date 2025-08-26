@@ -17,6 +17,7 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "nodemon",
+    "typecheck": "tsc --noEmit",
     "deploy": "npx tsx src/deploy-commands.ts"
   }
 }

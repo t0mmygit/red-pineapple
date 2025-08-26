@@ -9,6 +9,10 @@ export default registerButton({
   run: async (interaction: ButtonInteraction) => {
     const { message } = interaction;
 
+    if (!message.embeds[0]) {
+      throw new Error('Missing embeds!');
+    }
+
     const embed = EmbedBuilder.from(message.embeds[0]);
     embed
       .setColor(COLORS.ERROR)

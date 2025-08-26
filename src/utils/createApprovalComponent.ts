@@ -2,7 +2,6 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EMOJIS } from './constant.js';
 
 export default function createApprovalComponent(
-  id: string | number,
   type: string,
   approveLabel = 'Approve',
   rejectLabel = 'Reject',

@@ -42,6 +42,10 @@ registerModal({
       .spliceComponents(-1, 1, footerComponent)
       .spliceComponents(-1, 0, reasonComponent);
 
+    if (!interaction.isFromMessage()) {
+      throw new Error('Interaction is not from message!');
+    }
+
     await interaction.update({
       components: [container],
       flags: MessageFlags.IsComponentsV2,

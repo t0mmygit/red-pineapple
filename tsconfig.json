@@ -9,18 +9,18 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "exactOptionalPropertyTypes": true,
-    "noFallThroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "noImplicitReturn": true,
+    "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "NoUnusedParameters": true,
+    "noUnusedParameters": true,
 
     // Modules
     "module": "node16",
     "moduleResolution": "node16",
-    "noCheckedSideEffectImports": true,
+    "noUncheckedSideEffectImports": true,
 
     // Emit
     "outDir": "./dist",

@@ -4,8 +4,8 @@ import { readdir } from 'fs/promises';
 import { dirname, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { runMiddleware } from '../../middlewares';
-import { Middleware } from '../../types/index';
+import { runMiddleware } from '../../middlewares/index.js';
+import { Middleware } from '../../types/index.js';
 
 // literal string type as type check
 export type ButtonId = Parameters<typeof registerButton>[0]['id'];

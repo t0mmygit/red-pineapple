@@ -1,11 +1,6 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  EmbedBuilder,
-  MessageActionRowComponentBuilder
-} from '@discordjs/builders';
+import { EmbedBuilder } from '@discordjs/builders';
 import { blockQuote, inlineCode, userMention } from '@discordjs/formatters';
-import { ButtonStyle, ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 
 import createSlashCommand from '../utils/createSlashCommand.js';
 import createApprovalComponent from '../utils/createApprovalComponent.js';
@@ -40,7 +35,7 @@ export default createSlashCommand({
     const embed = await createEmbed(interaction);
     if (!embed) return;
 
-    const component = createApprovalComponent(interaction.id, interaction.commandName);
+    const component = createApprovalComponent(interaction.commandName);
 
     const username = userMention(interaction.user.id);
 
