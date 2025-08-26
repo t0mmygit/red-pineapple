@@ -1,0 +1,54 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout Repository 
+      uses: actions/checkout@v4
+      
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: 'npm'
+      
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build Project
+      run: npm run build --if-present
+
+    - name: Deploy Files via SCP
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
+        source: "package.json,pm2.config.cjs,dist/"
+        target: ${{ vars.ROOT_DIR }}
+
+    - name: Reload via PM2
+      uses: appleboy/ssh-action@v1.2.2
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
+        script: |
+          cd ${{ vars.ROOT_DIR }}
+
+          npm install --only=production
+
+          pm2 reload pm2.config.cjs
+          pm2 save
+          pm2 status
