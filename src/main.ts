@@ -60,6 +60,12 @@ async function start() {
     console.info('Events loaded successfully!');
   }
 
+  client.on('shardConnect', () => console.log('WebSocket Connected!'));
+  client.on('shardDisconnect', (ev) => console.log('Disconnected: ', ev));
+  client.on('debug', (info) => console.log('[DEBUG]', info));
+  client.on('warn', (info) => console.log('[WARN]', info));
+  client.on('error', (err) => console.log('[ERROR]', err));
+
   const commandLoaded = await loadCommands();
   if (commandLoaded) {
     console.info('Commands loaded successfully!');
@@ -80,12 +86,7 @@ async function start() {
     const token = process.env['DISCORD_TOKEN'];
     if (!token) throw new Error('Missing token!');
 
-    client.login(token)
-      .then(() => console.info('Bot logged!'))
-      .catch(err => {
-        console.error('Login error: ', err);
-        process.exit(0);
-      });
+    await client.login(token);
   } catch (error) {
     console.info(error);
   }
