@@ -4,8 +4,7 @@ module.exports = {
       name: "ikuyo-kita",
       script: "dist/main.js",
 
-      exec_mode: "cluster",
-      instances: 2,
+      exec_mode: "fork",
 
       autorestart: true,
       max_memory_restart: "200M",
