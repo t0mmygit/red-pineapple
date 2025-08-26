@@ -9,12 +9,17 @@ import { loadModals } from './handlers/modal/index.js';
 const client = new KitaClient();
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const allowedExt = process.env['NODE_ENV'] !== 'production'
+  ? ['.ts', 'js']
+  : ['.js'];
 
 async function loadEvents(): Promise<boolean> {
   console.info('Loading Events...');
 
   const eventsPath = resolve(__dirname, './events');
-  const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.ts'));
+  const eventFiles = readdirSync(eventsPath).filter((file) =>
+    allowedExt.some((ext) => file.endsWith(ext))
+  );
 
   for (const file of eventFiles) {
     const filePath = resolve(eventsPath, file);
@@ -36,7 +41,9 @@ async function loadCommands(): Promise<boolean> {
   console.info('Loading Commands...');
 
   const commandsPath = resolve(__dirname, './commands');
-  const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.ts'));
+  const commandFiles = readdirSync(commandsPath).filter((file) =>
+    allowedExt.some((ext) => file.endsWith(ext))
+  );
 
   for (const file of commandFiles) {
     const filePath = resolve(commandsPath, file);
