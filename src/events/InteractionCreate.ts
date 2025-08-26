@@ -1,29 +1,57 @@
-import { Events, ChatInputCommandInteraction } from 'discord.js'
+import { Events, inlineCode, Interaction } from 'discord.js';
 import { KitaClient } from '../client.js';
+import { Event } from '../types/index.js';
+import { logEvent } from '../utils/logger.js';
+import { COLORS } from '../utils/constant.js';
+import { handleButton } from '../handlers/button/index.js';
+import { handleModal } from '../handlers/modal/index.js';
 
-export const name = Events.InteractionCreate;
-export const on = true;
+let status = true;
 
-export async function listener(interaction: ChatInputCommandInteraction) {
+export const event: Event<Events.InteractionCreate> = {
+  name: Events.InteractionCreate,
+  once: false,
+  listener: async (interaction: Interaction) => {
+    if (interaction.isButton()) {
+      await handleButton(interaction);
+    }
+
+    if (interaction.isModalSubmit()) {
+      await handleModal(interaction);
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const client = interaction.client as KitaClient;
     const command = client.commands.get(interaction.commandName);
 
     if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
-        return;
+      console.error(`No command matching ${interaction.commandName} was found.`);
+      return;
     }
 
     try {
-        await command.execute(interaction);
+      await command.execute(interaction);
     } catch (error) {
-        console.error(`Error executing command ${interaction.commandName}:`, error);
+      console.error(`Error executing command ${interaction.commandName}:`, error);
+      status = false;
 
-        if (interaction.replied) {
-            await interaction.followUp({ content: 'This interaction was replied.' });
-        } else if (interaction.deferred) {
-            await interaction.followUp({ content: 'This interaction was deferred' });
-        }
+      if (interaction.replied) {
+        await interaction.followUp({ content: 'This interaction was replied.' });
+      } else if (interaction.deferred) {
+        await interaction.followUp({ content: 'This interaction was deferred' });
+      }
     }
-}
+
+    if (!interaction.guild) {
+      throw new Error('Application only support guild interaction!');
+    }
+
+    await logEvent('Slash Command', `${inlineCode(interaction.commandName)} was executed`, interaction.guild.name, {
+      user: interaction.user.tag,
+      userId: interaction.user.id,
+    }, status ? COLORS.INFO : COLORS.ERROR);
+  }
+};
+
+export default event;

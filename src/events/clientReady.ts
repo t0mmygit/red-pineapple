@@ -1,8 +1,23 @@
 import { Client, Events } from 'discord.js';
+import { setupLogger } from '../utils/logger.js';
+import { Event } from '../types/index.js';
+import 'dotenv/config';
 
-export const name = Events.ClientReady;
-export const once = true;
+export const event: Event<Events.ClientReady> = {
+    name: Events.ClientReady,
+    once: true,
+    listener: async (client: Client) => {
+        if (!client.user) {
+            throw new Error('Missing client user!');
+        }
 
-export function listener(client: Client) {
-    console.log(`Ready! Logged in as ${client.user?.tag}`);
+        console.info(`Ready! Logged in as ${client.user.tag}`);
+
+        if (!process.env.LOG_CHANNEL_ID) {
+            throw new Error('Missing LOG_CHANNEL_ID environment variable.')
+        }
+        await setupLogger(client, process.env.LOG_CHANNEL_ID);
+    }
 }
+
+export default event;

@@ -1,21 +1,38 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    // Language and Environment
     "lib": ["ES2022"],
+    "target": "ES2022",
+
+    // Type Checking
+    "strict": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallThroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturn": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "NoUnusedParameters": true,
+
+    // Modules
     "module": "node16",
     "moduleResolution": "node16",
+    "noCheckedSideEffectImports": true,
+
+    // Emit
     "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
+
+    // Include
+    "rootDir": "./src",
+
+    // Interop Constraints
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@events/*": ["src/events/*"],
-      "@types/*": ["src/types/*"]
-    }
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

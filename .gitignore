@@ -1,4 +1,4 @@
 node_modules
+.github/*
 .git
 .env
-Dockerfile.dev

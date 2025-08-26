@@ -1,18 +1,16 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import type { Command } from '../types/command.js';
+import { ChatInputCommandInteraction } from 'discord.js';
+import createSlashCommand from '../utils/createSlashCommand.js';
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Replies with pong!'),
+export default createSlashCommand({
+  name: 'ping',
+  description: 'Replies with pong!',
+  execute: async (interaction: ChatInputCommandInteraction) => {
+    await interaction.reply('Pinging...');
 
-    async execute(interaction: ChatInputCommandInteraction) {
-        await interaction.reply('Pinging...');
+    const reply = await interaction.fetchReply();
+    const apiLatency = Math.round(reply.createdTimestamp - interaction.createdTimestamp);
+    const wsLatency = interaction.client.ws.ping;
 
-        const reply = await interaction.fetchReply();
-        const apiLatency = Math.round(reply.createdTimestamp - interaction.createdTimestamp);
-        const wsLatency = interaction.client.ws.ping;
-
-        await interaction.editReply({ content: `Pong! \nAPI Latency: ${apiLatency}\nWebSocket Latency: ${wsLatency}` });
-    }
-} as Command;
+    await interaction.editReply({ content: `Pong! \nAPI Latency: ${apiLatency}\nWebSocket Latency: ${wsLatency}` });
+  }
+});

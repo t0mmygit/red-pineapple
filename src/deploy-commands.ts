@@ -11,43 +11,42 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const commandsPath = resolve(__dirname, './commands');
 const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.ts'));
 
-
 for (const file of commandFiles) {
-    const filePath = resolve(commandsPath, file);
-    const { default: command } = await import(filePath);
+  const filePath = resolve(commandsPath, file);
+  const { default: command } = await import(filePath);
 
-    if ('data' in command && 'execute' in command) {
-        commands.set(command.data.name, command);
-    } else {
-        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-    }
+  if ('data' in command && 'execute' in command) {
+    commands.set(command.data.name, command);
+  } else {
+    console.log(
+      `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+    );
+  }
 }
 
-const token = process.env.DISCORD_TOKEN;
-const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID;
+const token = process.env['DISCORD_TOKEN'];
+const clientId = process.env['CLIENT_ID'];
+const guildId = process.env['GUILD_ID'];
 
 if (!token || !clientId || !guildId) {
-    throw new Error('Required environment variables are missing!');
+  throw new Error('Required environment variables are missing!');
 }
 
 const rest = new REST().setToken(token);
 
 (async () => {
-    try {
-        console.log(`Started refreshing ${commands.size} application (/) commands.`);
+  try {
+    console.log(`Started refreshing ${commands.size} application (/) commands.`);
 
-        const data = await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
-            { body: commands },
-        );
+    const data = await rest.put(
+      Routes.applicationGuildCommands(clientId, guildId),
+      { body: [...commands.values()].map(command => command.data.toJSON()) },
+    );
 
-        console.dir(data, { depth: null });
-
-        if (data && typeof data === 'object' && 'size' in data) {
-            console.log(`Successfully reloaded ${data.size} application (/) commands.`);
-        }
-    } catch (error) {
-        console.error(error);
+    if (data && typeof data === 'object' && 'length' in data) {
+      console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     }
+  } catch (error) {
+    console.error(error);
+  }
 })();
