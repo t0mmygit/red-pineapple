@@ -76,7 +76,19 @@ async function start() {
   }
 
   console.info('Establishing websocket connection to Discord...');
-  await client.login(process.env['DISCORD_TOKEN']);
+  try {
+    const token = process.env['DISCORD_TOKEN'];
+    if (!token) throw new Error('Missing token!');
+
+    client.login(token)
+      .then(() => console.info('Bot logged!'))
+      .catch(err => {
+        console.error('Login error: ', err);
+        process.exit(0);
+      });
+  } catch (error) {
+    console.info(error);
+  }
 }
 
 await start();
