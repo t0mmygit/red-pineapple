@@ -63,7 +63,7 @@ export async function loadModals(): Promise<boolean> {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const files = await readdir(__dirname);
 
-  const allowedExt = process.env['NODE_ENV'] !== 'production' ? ['.ts', 'js'] : ['.js'];
+  const allowedExt = process.env['NODE_ENV'] !== 'production' ? ['.ts', '.js'] : ['.js'];
 
   const filtered = files.filter((file) => {
     if (file === 'index.ts' || file === 'index.js') return false;
