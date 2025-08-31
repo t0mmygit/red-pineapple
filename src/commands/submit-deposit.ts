@@ -9,6 +9,7 @@ import { COLORS, EMOJIS } from '../utils/constant.js';
 export default createSlashCommand({
   name: 'submit-deposit',
   description: 'Submit your competition/event deposit',
+  middlewares: [],
   builder: (builder) =>
     builder
       .addStringOption(option =>

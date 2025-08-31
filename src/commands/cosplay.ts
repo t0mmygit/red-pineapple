@@ -19,10 +19,12 @@ import {
 import { COLORS, EMOJIS } from '../utils/constant.js';
 import createSlashCommand from '../utils/createSlashCommand.js';
 import createApprovalComponent from '../utils/createApprovalComponent.js';
+import { isAuthenticated } from '../middlewares/isAuthenticated.js';
 
 export default createSlashCommand({
   name: 'cosplay',
   description: 'Work in progress',
+  middlewares: [isAuthenticated],
   builder: (builder) =>
     builder
       .addStringOption(option =>

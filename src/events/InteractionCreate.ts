@@ -1,10 +1,13 @@
-import { Events, inlineCode, Interaction } from 'discord.js';
+import { Events, Interaction } from 'discord.js';
+import { inlineCode } from '@discordjs/formatters';
+
 import { KitaClient } from '../client.js';
 import { Event } from '../types/index.js';
-import { logEvent } from '../utils/logger.js';
 import { COLORS } from '../utils/constant.js';
+import { logEvent } from '../utils/logger.js';
 import { handleButton } from '../handlers/button/index.js';
 import { handleModal } from '../handlers/modal/index.js';
+import { runMiddleware } from '../middlewares/index.js';
 
 let status = true;
 
@@ -31,6 +34,9 @@ export const event: Event<Events.InteractionCreate> = {
     }
 
     try {
+      const passed = await runMiddleware(interaction, command.middlewares);
+      if (!passed) return;
+
       await command.execute(interaction);
     } catch (error) {
       console.error(`Error executing command ${interaction.commandName}:`, error);
@@ -47,7 +53,10 @@ export const event: Event<Events.InteractionCreate> = {
       throw new Error('Application only support guild interaction!');
     }
 
-    await logEvent('Slash Command', `${inlineCode(interaction.commandName)} was executed`, interaction.guild.name, {
+    await logEvent(
+      'Slash Command',
+      `${inlineCode(interaction.commandName)} was executed`,
+      interaction.guild.name, {
       user: interaction.user.tag,
       userId: interaction.user.id,
     }, status ? COLORS.INFO : COLORS.ERROR);
