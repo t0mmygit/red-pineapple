@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import { drizzle } from 'drizzle-orm/libsql';
 import { Config, createClient } from '@libsql/client';
-import { users } from './schema.js';
+import { events, submissions, users } from './schema.js';
 
 const isProduction = process.env['NODE_ENV'] === 'production';
 
@@ -33,6 +33,8 @@ export const db = drizzle(
     casing: 'snake_case',
     schema: {
       users,
+      events,
+      submissions,
     },
   }
 );
