@@ -1,17 +1,15 @@
+import 'dotenv/config';
+
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+
 import { KitaClient } from './client.js';
-import 'dotenv/config';
+
 import { loadButtons } from './handlers/button/index.js';
 import { loadModals } from './handlers/modal/index.js';
+import { __dirname, allowedExt } from './utils/helper.js';
 
-const client = new KitaClient();
-
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const allowedExt = process.env['NODE_ENV'] !== 'production'
-  ? ['.ts', 'js']
-  : ['.js'];
+export const client = new KitaClient();
 
 async function loadEvents(): Promise<boolean> {
   console.info('Loading Events...');
@@ -66,12 +64,6 @@ async function start() {
   if (eventLoaded) {
     console.info('Events loaded successfully!');
   }
-
-  client.on('shardConnect', () => console.log('WebSocket Connected!'));
-  client.on('shardDisconnect', (ev) => console.log('Disconnected: ', ev));
-  client.on('debug', (info) => console.log('[DEBUG]', info));
-  client.on('warn', (info) => console.log('[WARN]', info));
-  client.on('error', (err) => console.log('[ERROR]', err));
 
   const commandLoaded = await loadCommands();
   if (commandLoaded) {

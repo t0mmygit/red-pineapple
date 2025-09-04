@@ -1,10 +1,13 @@
-import { Events, inlineCode, Interaction } from 'discord.js';
+import { Events, Interaction } from 'discord.js';
+import { inlineCode } from '@discordjs/formatters';
+
 import { KitaClient } from '../client.js';
 import { Event } from '../types/index.js';
-import { logEvent } from '../utils/logger.js';
 import { COLORS } from '../utils/constant.js';
+import { logEvent } from '../utils/logger.js';
 import { handleButton } from '../handlers/button/index.js';
 import { handleModal } from '../handlers/modal/index.js';
+import { runMiddleware } from '../middlewares/index.js';
 
 let status = true;
 
@@ -20,7 +23,7 @@ export const event: Event<Events.InteractionCreate> = {
       await handleModal(interaction);
     }
 
-    if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
 
     const client = interaction.client as KitaClient;
     const command = client.commands.get(interaction.commandName);
@@ -31,10 +34,19 @@ export const event: Event<Events.InteractionCreate> = {
     }
 
     try {
-      await command.execute(interaction);
+      const passed = await runMiddleware(interaction, command.middlewares);
+      if (!passed) return;
+
+      if (interaction.isChatInputCommand() && 'execute' in command) {
+        await command.execute(interaction);
+      } else if (interaction.isAutocomplete() && 'autocomplete' in command) {
+        await command.autocomplete(interaction);
+      }
     } catch (error) {
       console.error(`Error executing command ${interaction.commandName}:`, error);
       status = false;
+
+      if (interaction.isAutocomplete()) return;
 
       if (interaction.replied) {
         await interaction.followUp({ content: 'This interaction was replied.' });
@@ -47,7 +59,12 @@ export const event: Event<Events.InteractionCreate> = {
       throw new Error('Application only support guild interaction!');
     }
 
-    await logEvent('Slash Command', `${inlineCode(interaction.commandName)} was executed`, interaction.guild.name, {
+    if (interaction.isAutocomplete()) return;
+
+    await logEvent(
+      'Slash Command',
+      `${inlineCode(interaction.commandName)} was executed`,
+      interaction.guild.name, {
       user: interaction.user.tag,
       userId: interaction.user.id,
     }, status ? COLORS.INFO : COLORS.ERROR);

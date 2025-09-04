@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1756638957389,
+      "tag": "0000_massive_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1756649119420,
+      "tag": "0001_loose_dark_phoenix",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1756697343707,
+      "tag": "0002_handy_nick_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1756726556802,
+      "tag": "0003_bored_silver_fox",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1756726689091,
+      "tag": "0004_old_korg",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1756726757553,
+      "tag": "0005_boring_butterfly",
+      "breakpoints": true
+    }
+  ]
+}
