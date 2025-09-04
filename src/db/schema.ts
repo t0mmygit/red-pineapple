@@ -15,6 +15,7 @@ export const events = table('events', {
   code: text({ length: 3 }).unique().notNull(),
   name: text({ length: 256 }).notNull(),
   command: text().unique(),
+  rating: integer({ mode: 'number' }).default(5),
   maxSubmissionCount: integer('max_submission_count', { mode: 'number' }).default(1),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
 });
