@@ -1,17 +1,15 @@
+import 'dotenv/config';
+
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+
 import { KitaClient } from './client.js';
-import 'dotenv/config';
+
 import { loadButtons } from './handlers/button/index.js';
 import { loadModals } from './handlers/modal/index.js';
+import { __dirname, allowedExt } from './utils/helper.js';
 
-const client = new KitaClient();
-
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const allowedExt = process.env['NODE_ENV'] !== 'production'
-  ? ['.ts', 'js']
-  : ['.js'];
+export const client = new KitaClient();
 
 async function loadEvents(): Promise<boolean> {
   console.info('Loading Events...');
