@@ -16,8 +16,5 @@ export const isAuthenticated = async (
   if (!user) {
     await db.insert(users).values({ id: discordId });
   }
-
-  console.info('isAuthenticated: ', user);
-
   return true;
 };
