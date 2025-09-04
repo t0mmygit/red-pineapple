@@ -6,6 +6,8 @@ export const EMOJIS = {
   WHITE_CHECK_MARK: '✅',
   CROSS_MARK: '❌',
   SPARKLES: '✨',
+  STAR: '⭐',
+  KIMONO: '👘',
   INBOX_TRAY: '📥',
 } as const;
 
