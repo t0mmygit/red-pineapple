@@ -25,8 +25,8 @@ import {
   getSubmissionCount,
   insertSubmission
 } from '../services/submissions.js';
-import { NewSubmission, Submission } from '../db/schema.js';
-import { selectEventByNameOrCode } from '../services/events.js';
+import { Event, NewSubmission, Submission } from '../db/schema.js';
+import { selectEventByCommand } from '../services/events.js';
 import { createTimeoutMessage } from '../utils/message.js';
 
 export default createSlashCommand({
@@ -56,9 +56,8 @@ export default createSlashCommand({
     await interaction.deferReply();
     const { user } = interaction;
 
-    const eventNameOrCode = 'Cosplay';
+    const event = await selectEventByCommand(interaction.commandName);
 
-    const event = await selectEventByNameOrCode(eventNameOrCode);
     if (!event) {
       await createTimeoutMessage(
         interaction,
@@ -68,7 +67,7 @@ export default createSlashCommand({
       return;
     };
 
-    const isValidSubmission = await validateSubmission(interaction, user.id, event.id);
+    const isValidSubmission = await validateSubmission(interaction, event, user.id);
     if (!isValidSubmission) return;
 
     const submission = await insertSubmission(
@@ -132,7 +131,7 @@ const createContainer = async (
   const submissionId = await getFormattedSubmissionId(submission);
   const title = new TextDisplayBuilder()
     .setContent(
-      heading(`${EMOJIS.SPARKLES} New Cosplay Unveiled!`, HeadingLevel.Two)
+      heading(`${EMOJIS.KIMONO} New Cosplay Unveiled!`, HeadingLevel.Two)
     );
   const topSection = new SectionBuilder()
     .addTextDisplayComponents(title)
@@ -193,20 +192,20 @@ const createContainer = async (
 
 const validateSubmission = async (
   interaction: ChatInputCommandInteraction,
+  event: Event,
   userId: string,
-  eventId: number
 ): Promise<boolean> => {
-  const userSubmissionCount = await getSubmissionCount(userId, eventId);
-  const maxSubmission = 1;
+  const userSubmissionCount = await getSubmissionCount(userId, event.id);
+  const maxSubmissionCount = event.maxSubmissionCount ?? 1;
 
-  if (userSubmissionCount < maxSubmission) {
+  if (userSubmissionCount < maxSubmissionCount) {
     return true;
   }
 
   try {
     await createTimeoutMessage(
       interaction,
-      `You are limited to ${maxSubmission} submissions!`
+      `You are limited to ${maxSubmissionCount} submissions!`
     );
 
     return false;
