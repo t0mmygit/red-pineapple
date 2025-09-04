@@ -35,5 +35,7 @@ export const updateEventByName = async (name: string, values: EventData) => {
 export const getEventRating = async (target: string): Promise<number | null> => {
   const event = await selectEventByNameOrCode(target);
 
+  if (!event) throw new Error('Event rating not defined.');
+
   return event.rating;
 };
