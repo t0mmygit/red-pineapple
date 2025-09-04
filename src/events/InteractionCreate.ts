@@ -23,7 +23,7 @@ export const event: Event<Events.InteractionCreate> = {
       await handleModal(interaction);
     }
 
-    if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
 
     const client = interaction.client as KitaClient;
     const command = client.commands.get(interaction.commandName);
@@ -37,10 +37,16 @@ export const event: Event<Events.InteractionCreate> = {
       const passed = await runMiddleware(interaction, command.middlewares);
       if (!passed) return;
 
-      await command.execute(interaction);
+      if (interaction.isChatInputCommand() && 'execute' in command) {
+        await command.execute(interaction);
+      } else if (interaction.isAutocomplete() && 'autocomplete' in command) {
+        await command.autocomplete(interaction);
+      }
     } catch (error) {
       console.error(`Error executing command ${interaction.commandName}:`, error);
       status = false;
+
+      if (interaction.isAutocomplete()) return;
 
       if (interaction.replied) {
         await interaction.followUp({ content: 'This interaction was replied.' });
@@ -52,6 +58,8 @@ export const event: Event<Events.InteractionCreate> = {
     if (!interaction.guild) {
       throw new Error('Application only support guild interaction!');
     }
+
+    if (interaction.isAutocomplete()) return;
 
     await logEvent(
       'Slash Command',

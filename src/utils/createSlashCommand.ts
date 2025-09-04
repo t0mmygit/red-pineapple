@@ -1,4 +1,5 @@
 import {
+  AutocompleteInteraction,
   ChatInputCommandInteraction,
   SlashCommandBuilder,
   SlashCommandOptionsOnlyBuilder,
@@ -15,6 +16,7 @@ export interface CommandOptions {
   description: string,
   middlewares: Middleware[],
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>,
+  autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>,
   builder?: (builder: SlashCommandBuilder) => BuilderReturnType;
 }
 
@@ -27,11 +29,17 @@ export const createSlashCommand = (options: CommandOptions): Command => {
     builder = options.builder(builder) as SlashCommandBuilder;
   }
 
-  return {
+  const result: Command = {
     data: builder,
     middlewares: options.middlewares,
     execute: options.execute,
   };
+
+  if (options.autocomplete) {
+    result.autocomplete = options.autocomplete;
+  }
+
+  return result;
 };
 
 export default createSlashCommand;
