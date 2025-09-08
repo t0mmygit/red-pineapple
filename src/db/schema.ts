@@ -7,6 +7,7 @@ export const users = table('users', {
   username: text(),
 });
 
+export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
 // Event Table
