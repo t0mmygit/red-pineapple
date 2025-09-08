@@ -32,7 +32,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT || '22' }}
-        source: "package.json,package-lock.json,pm2.config.cjs,dist/,drizzle/,drizzle.config.ts/,.env.example"
+        source: "package.json,package-lock.json,pm2.config.cjs,dist/,drizzle/,drizzle.config.ts,.env.example,.nvmrc"
         target: ${{ vars.ROOT_DIR }}
 
     - name: Reload via PM2
