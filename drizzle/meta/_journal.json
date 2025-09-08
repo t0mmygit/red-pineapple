@@ -50,6 +50,13 @@
       "when": 1756995700740,
       "tag": "0006_mixed_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1757347490426,
+      "tag": "0007_jittery_marten_broadcloak",
+      "breakpoints": true
     }
   ]
 }
