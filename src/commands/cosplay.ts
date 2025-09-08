@@ -241,7 +241,7 @@ const constructDescription = async (
   characterName: string,
   characterSource: string
 ) => {
-  const user = await selectUserById(userId);
+  const user = await selectUserById(userId, true);
 
   const fields = [
     { label: 'GrowID', value: user.username },
