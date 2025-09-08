@@ -28,6 +28,8 @@ import {
 import { Event, NewSubmission, Submission } from '../db/schema.js';
 import { selectEventByCommand } from '../services/events.js';
 import { createTimeoutMessage } from '../utils/message.js';
+import { selectUserById } from '../services/users.js';
+import { UserNotFoundError } from '../utils/errors.js';
 
 export default createSlashCommand({
   name: 'cosplay',
@@ -77,10 +79,17 @@ export default createSlashCommand({
     const container = await createContainer(interaction, submission);
     const component = createApprovalComponent(interaction.commandName);
 
-    await interaction.editReply({
-      components: [container, component],
-      flags: MessageFlags.IsComponentsV2,
-    });
+    if (container) {
+      await interaction.editReply({
+        components: [container, component],
+        flags: MessageFlags.IsComponentsV2,
+      });
+    } else {
+      await createTimeoutMessage(
+        interaction,
+        'Failed to generate cosplay entry. Please contact the developer!'
+      );
+    }
   }
 });
 
@@ -118,8 +127,8 @@ const getOptions = (interaction: ChatInputCommandInteraction) => {
 const createContainer = async (
   interaction: ChatInputCommandInteraction,
   submission: Submission,
-): Promise<ContainerBuilder> => {
-  const { user } = interaction;
+): Promise<ContainerBuilder | undefined> => {
+  const userId = interaction.user.id;
   const {
     characterName,
     characterSource,
@@ -127,67 +136,61 @@ const createContainer = async (
     cosplayAttachment
   } = getOptions(interaction);
 
-  // Container Components
-  const submissionId = await getFormattedSubmissionId(submission);
-  const title = new TextDisplayBuilder()
-    .setContent(
-      heading(`${EMOJIS.KIMONO} New Cosplay Unveiled!`, HeadingLevel.Two)
-    );
-  const topSection = new SectionBuilder()
-    .addTextDisplayComponents(title)
-    .setButtonAccessory(
-      button => button
-        .setCustomId('submission-id')
-        .setLabel(`#${submissionId}`)
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true)
-    );
+  try {
+    const submissionId = await getFormattedSubmissionId(submission);
+    const topSection = constructUpperSection(submissionId);
 
-  const fields = [
-    { label: 'GrowID', value: user.username },
-    { label: 'Cosplay', value: characterName },
-    { label: 'Source', value: characterSource },
-  ];
+    const description = await constructDescription(userId, characterName, characterSource);
 
-  const formattedList = fields.map(field =>
-    `${field.label}: ${inlineCode(field.value)}`
-  );
+    const gallery = new MediaGalleryBuilder()
+      .addItems(
+        item => item
+          .setDescription('character-cosplay')
+          .setURL(cosplayAttachment.url),
+        item => item
+          .setDescription('origin-character')
+          .setURL(characterAttachment.url)
+      );
 
-  const description = new TextDisplayBuilder()
-    .setContent(`${bold('Description')}\n${unorderedList(formattedList)}`);
+    const separator = new SeparatorBuilder();
 
-  const gallery = new MediaGalleryBuilder()
-    .addItems(
-      item => item
-        .setDescription('character-cosplay')
-        .setURL(cosplayAttachment.url),
-      item => item
-        .setDescription('origin-character')
-        .setURL(characterAttachment.url)
-    );
+    const footer = new TextDisplayBuilder()
+      .setContent(
+        subtext(`${EMOJIS.INBOX_TRAY}\tSubmitted by ${userMention(userId)}`)
+      );
 
-  const separator = new SeparatorBuilder();
+    // TODO: Get guild and channel from Event table
+    const guildId = '1289240783039234200';
+    const channelId = '1409705626187337821';
 
-  const footer = new TextDisplayBuilder()
-    .setContent(
-      subtext(`${EMOJIS.INBOX_TRAY}\tSubmitted by ${userMention(user.id)}`)
-    );
-  const footerSection = new SectionBuilder()
-    .addTextDisplayComponents(footer)
-    .setButtonAccessory(
-      button => button
-        .setLabel('Read rules')
-        .setStyle(ButtonStyle.Link)
-        .setURL('https://discord.com/channels/1102601261473345677/1102601261473345680')
-    );
+    const footerSection = new SectionBuilder()
+      .addTextDisplayComponents(footer)
+      .setButtonAccessory(
+        button => button
+          .setLabel('Read rules')
+          .setStyle(ButtonStyle.Link)
+          .setURL(`https://discord.com/channels/${guildId}/${channelId}`)
+      );
 
-  return new ContainerBuilder()
-    .setAccentColor(COLORS.INFO)
-    .addSectionComponents(topSection)
-    .addTextDisplayComponents(description)
-    .addMediaGalleryComponents(gallery)
-    .addSeparatorComponents(separator)
-    .addSectionComponents(footerSection);
+    return new ContainerBuilder()
+      .setAccentColor(COLORS.INFO)
+      .addSectionComponents(topSection)
+      .addTextDisplayComponents(description)
+      .addMediaGalleryComponents(gallery)
+      .addSeparatorComponents(separator)
+      .addSectionComponents(footerSection);
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof UserNotFoundError) {
+      await createTimeoutMessage(
+        interaction,
+        `Profile not found. Did you do ${inlineCode('/profile')} yet?`
+      );
+    }
+
+    return;
+  }
 };
 
 const validateSubmission = async (
@@ -214,4 +217,42 @@ const validateSubmission = async (
 
     return false;
   }
+};
+
+const constructUpperSection = (submissionId: string) => {
+  const title = new TextDisplayBuilder()
+    .setContent(
+      heading(`${EMOJIS.KIMONO} New Cosplay Unveiled!`, HeadingLevel.Two)
+    );
+
+  return new SectionBuilder()
+    .addTextDisplayComponents(title)
+    .setButtonAccessory(
+      button => button
+        .setCustomId('submission-id')
+        .setLabel(`#${submissionId}`)
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true)
+    );
+};
+
+const constructDescription = async (
+  userId: string,
+  characterName: string,
+  characterSource: string
+) => {
+  const user = await selectUserById(userId);
+
+  const fields = [
+    { label: 'GrowID', value: user.username },
+    { label: 'Cosplay', value: characterName },
+    { label: 'Source', value: characterSource },
+  ];
+
+  const formattedList = fields.map(field =>
+    `${field.label}: ${inlineCode(field.value)}`
+  );
+
+  return new TextDisplayBuilder()
+    .setContent(`${bold('Description')}\n${unorderedList(formattedList)}`);
 };

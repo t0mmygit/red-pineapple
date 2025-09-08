@@ -4,7 +4,7 @@ import { integer, sqliteTable as table, text } from 'drizzle-orm/sqlite-core';
 // User Table
 export const users = table('users', {
   id: text().primaryKey(),
-  username: text(),
+  username: text().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
