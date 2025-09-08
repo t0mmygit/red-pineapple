@@ -35,7 +35,7 @@ export default createSlashCommand({
 
     const userId = interaction.user.id;
     try {
-      const user: User | undefined = await selectUserById(userId);
+      const user: User | undefined = await selectUserById(userId, false);
       if (user) {
         await updateUserById(user.id, { username: growId });
       } else {
