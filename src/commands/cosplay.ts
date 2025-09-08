@@ -19,10 +19,20 @@ import {
 import { COLORS, EMOJIS } from '../utils/constant.js';
 import createSlashCommand from '../utils/createSlashCommand.js';
 import createApprovalComponent from '../utils/createApprovalComponent.js';
+import { isAuthenticated } from '../middlewares/isAuthenticated.js';
+import {
+  getFormattedSubmissionId,
+  getSubmissionCount,
+  insertSubmission
+} from '../services/submissions.js';
+import { Event, NewSubmission, Submission } from '../db/schema.js';
+import { selectEventByCommand } from '../services/events.js';
+import { createTimeoutMessage } from '../utils/message.js';
 
 export default createSlashCommand({
   name: 'cosplay',
   description: 'Work in progress',
+  middlewares: [isAuthenticated],
   builder: (builder) =>
     builder
       .addStringOption(option =>
@@ -44,8 +54,27 @@ export default createSlashCommand({
       ),
   execute: async (interaction) => {
     await interaction.deferReply();
+    const { user } = interaction;
 
-    const container = createContainer(interaction);
+    const event = await selectEventByCommand(interaction.commandName);
+
+    if (!event) {
+      await createTimeoutMessage(
+        interaction,
+        'Submission is currently not available. Please refer to the administrator!',
+      );
+
+      return;
+    };
+
+    const isValidSubmission = await validateSubmission(interaction, event, user.id);
+    if (!isValidSubmission) return;
+
+    const submission = await insertSubmission(
+      { userId: user.id, eventId: event.id } as NewSubmission
+    );
+
+    const container = await createContainer(interaction, submission);
     const component = createApprovalComponent(interaction.commandName);
 
     await interaction.editReply({
@@ -55,8 +84,8 @@ export default createSlashCommand({
   }
 });
 
-function createContainer(interaction: ChatInputCommandInteraction): ContainerBuilder {
-  const { options, user } = interaction;
+const getOptions = (interaction: ChatInputCommandInteraction) => {
+  const { options } = interaction;
 
   const characterName = options.getString('character-name');
   if (!characterName) {
@@ -78,9 +107,41 @@ function createContainer(interaction: ChatInputCommandInteraction): ContainerBui
     throw new Error('Missing attachment: origin-character');
   }
 
+  return {
+    characterName,
+    characterSource,
+    cosplayAttachment,
+    characterAttachment,
+  };
+};
+
+const createContainer = async (
+  interaction: ChatInputCommandInteraction,
+  submission: Submission,
+): Promise<ContainerBuilder> => {
+  const { user } = interaction;
+  const {
+    characterName,
+    characterSource,
+    characterAttachment,
+    cosplayAttachment
+  } = getOptions(interaction);
+
   // Container Components
+  const submissionId = await getFormattedSubmissionId(submission);
   const title = new TextDisplayBuilder()
-    .setContent(heading(`${EMOJIS.SPARKLES} New Cosplay Unveiled!`, HeadingLevel.Two));
+    .setContent(
+      heading(`${EMOJIS.KIMONO} New Cosplay Unveiled!`, HeadingLevel.Two)
+    );
+  const topSection = new SectionBuilder()
+    .addTextDisplayComponents(title)
+    .setButtonAccessory(
+      button => button
+        .setCustomId('submission-id')
+        .setLabel(`#${submissionId}`)
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true)
+    );
 
   const fields = [
     { label: 'GrowID', value: user.username },
@@ -122,9 +183,35 @@ function createContainer(interaction: ChatInputCommandInteraction): ContainerBui
 
   return new ContainerBuilder()
     .setAccentColor(COLORS.INFO)
-    .addTextDisplayComponents(title)
+    .addSectionComponents(topSection)
     .addTextDisplayComponents(description)
     .addMediaGalleryComponents(gallery)
     .addSeparatorComponents(separator)
     .addSectionComponents(footerSection);
-}
+};
+
+const validateSubmission = async (
+  interaction: ChatInputCommandInteraction,
+  event: Event,
+  userId: string,
+): Promise<boolean> => {
+  const userSubmissionCount = await getSubmissionCount(userId, event.id);
+  const maxSubmissionCount = event.maxSubmissionCount ?? 1;
+
+  if (userSubmissionCount < maxSubmissionCount) {
+    return true;
+  }
+
+  try {
+    await createTimeoutMessage(
+      interaction,
+      `You are limited to ${maxSubmissionCount} submissions!`
+    );
+
+    return false;
+  } catch (error) {
+    console.error(error);
+
+    return false;
+  }
+};
