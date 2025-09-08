@@ -93,7 +93,6 @@ export default createSlashCommand({
 
       await sendUserMentionMessage(
         interaction,
-        interaction.user.id,
         'Update successfully!'
       );
     } catch (error) {

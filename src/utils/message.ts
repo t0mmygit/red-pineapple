@@ -39,9 +39,9 @@ export const createTimeoutMessage = async (
 
 export const sendUserMentionMessage = async (
   interaction: ChatInputCommandInteraction,
-  userId: string,
   message: string
 ): Promise<undefined> => {
+  const userId = interaction.user.id;
   const replyContent = { content: `${userMention(userId)} ${message}` };
 
   if (interaction.replied || interaction.deferred) {
